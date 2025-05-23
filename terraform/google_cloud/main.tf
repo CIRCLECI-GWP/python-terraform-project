@@ -14,7 +14,7 @@ variable "docker_declaration" {
 spec:
   containers:
     - name: web
-      image: "yemiwebby/python-cicd-terraform"
+      image: "yemiwebby/python-cicd-terraform:latest"
       stdin: false
       tty: false
   restartPolicy: Always
@@ -76,6 +76,7 @@ resource "google_compute_instance" "default" {
 
   labels = {
     container-vm = "cos-stable-69-10895-62-0"
+    deploy_id    = "${timestamp()}"
   }
 
   network_interface {
