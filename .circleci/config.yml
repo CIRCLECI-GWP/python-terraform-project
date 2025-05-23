@@ -71,7 +71,7 @@ jobs:
             ls -l /tmp/workspace
             cat /tmp/workspace/docker_tag.txt
       - run:
-          name: Set up GCP credentials
+          name: Set up GCP credentials.
           command: |
             echo "$GOOGLE_CREDENTIALS" > /tmp/account.json
             export GOOGLE_APPLICATION_CREDENTIALS=/tmp/account.json
