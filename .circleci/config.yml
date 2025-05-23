@@ -56,6 +56,13 @@ jobs:
           at: /tmp/workspace
 
       - run:
+          name: Verify TAG file exists
+          command: |
+            echo "Contents of /tmp/workspace:"
+            ls -l /tmp/workspace
+            cat /tmp/workspace/docker_tag.txt
+
+      - run:
           name: Set up GCP credentials
           command: |
             echo "$GOOGLE_CREDENTIALS" > /tmp/account.json
@@ -80,6 +87,7 @@ jobs:
             TAG=$(cat /tmp/workspace/docker_tag.txt)
             cd terraform/google_cloud
             terraform apply -auto-approve tfplan
+
 workflows:
   build_test_deploy:
     jobs:
