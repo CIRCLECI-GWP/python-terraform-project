@@ -1,4 +1,3 @@
-
 FROM python:3.9-slim
 
 WORKDIR /opt/hello_world/
@@ -10,4 +9,5 @@ COPY hello_world.py .
 
 EXPOSE 5000
 
-CMD ["python", "hello_world.py"]
+# Use Gunicorn with 4 workers binding to all interfaces
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "hello_world:app"]
