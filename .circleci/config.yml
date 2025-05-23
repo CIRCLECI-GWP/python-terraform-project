@@ -13,82 +13,85 @@ jobs:
           name: Run Tests
           command: |
             python test_hello_world.py
-  deploy:
-    docker:
-      - image: cimg/python:3.10.13
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: false
-      - run:
-          name: Upgrade pip and install dependencies
-          command: |
-            python -m pip install --upgrade pip setuptools wheel
-            pip install --user --no-cache-dir -r requirements.txt
-      - run:
-          name: Set Python Path
-          command: |
-            echo "export PYTHONPATH=$(python -c 'import site; print(site.USER_SITE)')" >> $BASH_ENV
-            source $BASH_ENV
-      - run:
-          name: Install PyInstaller dependencies
-          command: |
-            pip install pyinstaller-hooks-contrib
-      - run:
-          name: Build and push Docker image
-          command: |
-            echo 'export TAG=0.1.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
-            echo 'export IMAGE_NAME=python-cicd-terraform' >> $BASH_ENV
-            source $BASH_ENV
+    deploy:
+      docker:
+        - image: cimg/python:3.10.13
+      steps:
+        - checkout
+        - setup_remote_docker:
+            docker_layer_caching: false
+        - run:
+            name: Upgrade pip and install dependencies
+            command: |
+              python -m pip install --upgrade pip setuptools wheel
+              pip install --user --no-cache-dir -r requirements.txt
+        - run:
+            name: Set Python Path
+            command: |
+              echo "export PYTHONPATH=$(python -c 'import site; print(site.USER_SITE)')" >> $BASH_ENV
+              source $BASH_ENV
+        - run:
+            name: Install PyInstaller dependencies
+            command: |
+              pip install pyinstaller-hooks-contrib
+        - run:
+            name: Build and push Docker image
+            command: |
+              echo 'export TAG=0.1.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
+              echo 'export IMAGE_NAME=python-cicd-terraform' >> $BASH_ENV
+              source $BASH_ENV
 
-            docker build --no-cache -t $DOCKER_LOGIN/$IMAGE_NAME:latest -t $DOCKER_LOGIN/$IMAGE_NAME:$TAG .
-            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
-            docker push $DOCKER_LOGIN/$IMAGE_NAME:latest
-            docker push $DOCKER_LOGIN/$IMAGE_NAME:$TAG
-      - run:
-          name: List files in workspace
-          command: ls -l
-  terraform_deploy:
-    docker:
-      - image: hashicorp/terraform:light
-    steps:
-      - checkout
+              docker build --no-cache -t $DOCKER_LOGIN/$IMAGE_NAME:latest -t $DOCKER_LOGIN/$IMAGE_NAME:$TAG .
+              echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+              docker push $DOCKER_LOGIN/$IMAGE_NAME:latest
+              docker push $DOCKER_LOGIN/$IMAGE_NAME:$TAG
+        - run:
+            name: Write Docker tag to workspace file
+            command: |
+              echo $TAG > docker_tag.txt
+        - persist_to_workspace:
+            root: .
+            paths:
+              - docker_tag.txt
+        - run:
+            name: List files in workspace
+            command: ls -l
 
-      - attach_workspace:
-          at: /tmp/workspace
-
-      - run:
-          name: Verify TAG file exists
-          command: |
-            echo "Contents of /tmp/workspace:"
-            ls -l /tmp/workspace
-            cat /tmp/workspace/docker_tag.txt
-
-      - run:
-          name: Set up GCP credentials
-          command: |
-            echo "$GOOGLE_CREDENTIALS" > /tmp/account.json
-            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/account.json
-
-      - run:
-          name: Terraform Init
-          command: |
-            cd terraform/google_cloud
-            terraform init
-
-      - run:
-          name: Terraform Plan
-          command: |
-            TAG=$(cat /tmp/workspace/docker_tag.txt)
-            cd terraform/google_cloud
-            terraform plan -out=tfplan -var="docker_image_tag=$TAG"
-
-      - run:
-          name: Terraform Apply
-          command: |
-            TAG=$(cat /tmp/workspace/docker_tag.txt)
-            cd terraform/google_cloud
-            terraform apply -auto-approve tfplan
+    terraform_deploy:
+      docker:
+        - image: hashicorp/terraform:light
+      steps:
+        - checkout
+        - attach_workspace:
+            at: /tmp/workspace
+        - run:
+            name: Verify TAG file exists
+            command: |
+              echo "Contents of /tmp/workspace:"
+              ls -l /tmp/workspace
+              cat /tmp/workspace/docker_tag.txt
+        - run:
+            name: Set up GCP credentials
+            command: |
+              echo "$GOOGLE_CREDENTIALS" > /tmp/account.json
+              export GOOGLE_APPLICATION_CREDENTIALS=/tmp/account.json
+        - run:
+            name: Terraform Init
+            command: |
+              cd terraform/google_cloud
+              terraform init
+        - run:
+            name: Terraform Plan
+            command: |
+              TAG=$(cat /tmp/workspace/docker_tag.txt)
+              cd terraform/google_cloud
+              terraform plan -out=tfplan -var="docker_image_tag=$TAG"
+        - run:
+            name: Terraform Apply
+            command: |
+              TAG=$(cat /tmp/workspace/docker_tag.txt)
+              cd terraform/google_cloud
+              terraform apply -auto-approve tfplan
 
 workflows:
   build_test_deploy:
