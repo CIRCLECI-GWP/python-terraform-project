@@ -10,8 +10,15 @@ variable "port_number" {
 
 variable "docker_declaration" {
   type = string
-  # Change the image: string to match the docker image you want to use
-  default = "spec:\n  containers:\n    - name: test-docker\n      image: 'yemiwebby/python-cicd-terraform'\n      stdin: false\n      tty: false\n  restartPolicy: Always\n"
+  default = <<EOT
+spec:
+  containers:
+    - name: web
+      image: "yemiwebby/python-cicd-terraform"
+      stdin: false
+      tty: false
+  restartPolicy: Always
+EOT
 }
 
 variable "boot_image_name" {
