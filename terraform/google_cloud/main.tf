@@ -1,6 +1,6 @@
 variable "project_name" {
   type = string
-  default = "cicd-circleci-tutorial"
+  default = "my-circleci-terraform-project"
 }
 
 variable "port_number" {
