@@ -13,18 +13,6 @@ variable "docker_image_tag" {
   type        = string
 }
 
-variable "docker_declaration" {
-  type = string
-  default = <<EOT
-spec:
-  containers:
-    - name: web
-      image: "yemiwebby/python-cicd-terraform:${var.docker_image_tag}"
-      stdin: false
-      tty: false
-  restartPolicy: Always
-EOT
-}
 
 variable "boot_image_name" {
   type = string
@@ -76,7 +64,15 @@ resource "google_compute_instance" "default" {
   }
 
   metadata = {
-    gce-container-declaration = var.docker_declaration
+    gce-container-declaration = <<EOT
+spec:
+  containers:
+    - name: web
+      image: "yemiwebby/python-cicd-terraform:${var.docker_image_tag}"
+      stdin: false
+      tty: false
+  restartPolicy: Always
+EOT
   }
 
   labels = {
