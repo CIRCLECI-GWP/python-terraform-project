@@ -11,7 +11,7 @@ variable "port_number" {
 variable "docker_declaration" {
   type = string
   # Change the image: string to match the docker image you want to use
-  default = "spec:\n  containers:\n    - name: test-docker\n      image: 'yemiwebby/python-cicd-workshop'\n      stdin: false\n      tty: false\n  restartPolicy: Always\n"
+  default = "spec:\n  containers:\n    - name: test-docker\n      image: 'yemiwebby/python-cicd-terraform'\n      stdin: false\n      tty: false\n  restartPolicy: Always\n"
 }
 
 variable "boot_image_name" {
@@ -30,6 +30,7 @@ provider "google"{
   region = "us-central1"
 }
 
+
 resource "google_compute_firewall" "http-5000" {
   name    = "http-5000"
   network = data.google_compute_network.default.name
@@ -42,6 +43,8 @@ resource "google_compute_firewall" "http-5000" {
     protocol = "tcp"
     ports    = [var.port_number]
   }
+
+  source_ranges = ["0.0.0.0/0"]
 }
 
 resource "google_compute_instance" "default" {
