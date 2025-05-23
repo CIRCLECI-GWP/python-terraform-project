@@ -25,7 +25,6 @@ data "google_compute_network" "default" {
 
 # Specify the provider (GCP, AWS, Azure)
 provider "google"{
-  credentials = file("cicd_tutorial_gcp_creds.json")
   project = var.project_name
   region = "us-central1"
 }
