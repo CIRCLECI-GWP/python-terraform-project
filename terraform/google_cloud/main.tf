@@ -82,6 +82,9 @@ spec:
       image: "yemiwebby/python-cicd-terraform:${var.docker_image_tag}"
       stdin: false
       tty: false
+      ports:
+        - containerPort: 5000
+          hostPort: 5000
   restartPolicy: Always
 EOT
   }
