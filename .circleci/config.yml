@@ -51,6 +51,8 @@ jobs:
       - image: hashicorp/terraform:light
     steps:
       - checkout
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
           name: Set up GCP credentials
           command: |
@@ -65,13 +67,13 @@ jobs:
           name: Terraform Plan
           command: |
             cd terraform/google_cloud
-            . $BASH_ENV
-            terraform plan -out=tfplan -var="docker_image_tag=0.1.${CIRCLE_BUILD_NUM}"
+            TAG=$(cat /tmp/workspace/docker_tag.txt)
+            terraform plan -out=tfplan -var="docker_image_tag=$TAG"
       - run:
           name: Terraform Apply
           command: |
             cd terraform/google_cloud
-            . $BASH_ENV
+            TAG=$(cat /tmp/workspace/docker_tag.txt)
             terraform apply -auto-approve tfplan
 workflows:
   build_test_deploy:
