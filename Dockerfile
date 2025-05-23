@@ -1,11 +1,12 @@
-FROM python:3.9
+FROM python:3.9-slim
 
-RUN mkdir /opt/hello_world/
 WORKDIR /opt/hello_world/
 
 COPY requirements.txt .
-COPY dist/hello_world /opt/hello_world/
+RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 80
+COPY hello_world.py .
 
-CMD [ "./hello_world" ]
+EXPOSE 5000
+
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "hello_world:app"]
