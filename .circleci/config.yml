@@ -53,9 +53,6 @@ jobs:
           root: .
           paths:
             - docker_tag.txt
-      - run:
-          name: List files in workspace
-          command: ls -l
 
   terraform_deploy:
     docker:
