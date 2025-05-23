@@ -51,29 +51,34 @@ jobs:
       - image: hashicorp/terraform:light
     steps:
       - checkout
+
       - attach_workspace:
           at: /tmp/workspace
+
       - run:
           name: Set up GCP credentials
           command: |
             echo "$GOOGLE_CREDENTIALS" > /tmp/account.json
             export GOOGLE_APPLICATION_CREDENTIALS=/tmp/account.json
+
       - run:
           name: Terraform Init
           command: |
             cd terraform/google_cloud
             terraform init
+
       - run:
           name: Terraform Plan
           command: |
-            cd terraform/google_cloud
             TAG=$(cat /tmp/workspace/docker_tag.txt)
+            cd terraform/google_cloud
             terraform plan -out=tfplan -var="docker_image_tag=$TAG"
+
       - run:
           name: Terraform Apply
           command: |
-            cd terraform/google_cloud
             TAG=$(cat /tmp/workspace/docker_tag.txt)
+            cd terraform/google_cloud
             terraform apply -auto-approve tfplan
 workflows:
   build_test_deploy:
