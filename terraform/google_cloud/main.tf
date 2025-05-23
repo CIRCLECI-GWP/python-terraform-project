@@ -76,7 +76,7 @@ resource "google_compute_instance" "default" {
 
   labels = {
     container-vm = "cos-stable-69-10895-62-0"
-    deploy_id    = "${timestamp()}"
+    deploy_id    = formatdate("20060102150405", timestamp())
   }
 
   network_interface {
