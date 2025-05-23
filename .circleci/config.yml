@@ -45,6 +45,34 @@ jobs:
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
             docker push $DOCKER_LOGIN/$IMAGE_NAME:latest
             docker push $DOCKER_LOGIN/$IMAGE_NAME:$TAG
+
+  terraform_deploy:
+    docker:
+      - image: hashicorp/terraform:light
+    steps:
+      - checkout
+      - run:
+          name: Set up GCP credentials
+          command: |
+            echo "$GOOGLE_CREDENTIALS" > /tmp/account.json
+            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/account.json
+      - run:
+          name: Terraform Init
+          command: |
+            cd terraform/google_cloud
+            terraform init
+      - run:
+          name: Terraform Plan
+          command: |
+            cd terraform/google_cloud
+            source $BASH_ENV
+            terraform plan -out=tfplan -var="docker_image_tag=0.1.${CIRCLE_BUILD_NUM}"
+      - run:
+          name: Terraform Apply
+          command: |
+            cd terraform/google_cloud
+            source $BASH_ENV
+            terraform apply -auto-approve tfplan
 workflows:
   build_test_deploy:
     jobs:
@@ -52,3 +80,6 @@ workflows:
       - deploy:
           requires:
             - build_test
+      - terraform_deploy:
+          requires:
+            - deploy
