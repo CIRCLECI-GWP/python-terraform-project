@@ -65,14 +65,29 @@ jobs:
           name: Terraform Plan
           command: |
             cd terraform/google_cloud
-            source $BASH_ENV
+            . $BASH_ENV
             terraform plan -out=tfplan -var="docker_image_tag=0.1.${CIRCLE_BUILD_NUM}"
       - run:
           name: Terraform Apply
           command: |
             cd terraform/google_cloud
-            source $BASH_ENV
+            . $BASH_ENV
             terraform apply -auto-approve tfplan
+
+
+            - run:
+    name: Terraform Plan
+    command: |
+      cd terraform/google_cloud
+      . $BASH_ENV
+      terraform plan -out=tfplan -var="docker_image_tag=0.1.${CIRCLE_BUILD_NUM}"
+
+- run:
+    name: Terraform Apply
+    command: |
+      cd terraform/google_cloud
+      . $BASH_ENV
+      terraform apply -auto-approve tfplan
 workflows:
   build_test_deploy:
     jobs:

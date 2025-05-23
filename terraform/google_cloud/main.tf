@@ -8,13 +8,18 @@ variable "port_number" {
   default = "5000"
 }
 
+variable "docker_image_tag" {
+  description = "Docker image tag to deploy"
+  type        = string
+}
+
 variable "docker_declaration" {
   type = string
   default = <<EOT
 spec:
   containers:
     - name: web
-      image: "yemiwebby/python-cicd-terraform:latest"
+      image: "yemiwebby/python-cicd-terraform:${var.docker_image_tag}"
       stdin: false
       tty: false
   restartPolicy: Always
